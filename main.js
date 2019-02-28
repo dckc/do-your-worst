@@ -54,7 +54,6 @@ function doYourWorst(request, response) {
   if (query && query.code) {
     const code = query.code.trim();
     console.log('evaluating:', code);
-    const messages = [];
     const s = SES.makeSESRootRealm({});
 
     try {
