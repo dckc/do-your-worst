@@ -1,6 +1,7 @@
 /* global require */
 // @flow
 
+const urlMod = require('url');
 
 const { Loader } = require('./loader');
 
@@ -11,9 +12,9 @@ const { Loader } = require('./loader');
  * -- https://github.com/Agoric/SES/issues/67#issuecomment-466705822
  */
 function _createServer(loader, { http }) {
-  const { realm, require } = loader;
+  const { realm } = loader;
   return realm.evaluate(`(${wrapCreateServer})()`, {
-    require,
+    require: realm.makeRequire({ '@agoric/harden': true }),
     CREATE: http.createServer,
   });
 
@@ -33,6 +34,22 @@ function _createServer(loader, { http }) {
 }
 
 
+function _url() {
+  return {
+    attenuatorSource: `${makeUrlModule}`,
+    url: urlMod
+  };
+
+  function makeUrlModule(cfgVal) {
+    const { url } = cfgVal;
+    return {
+      parse: (...args) => Object.freeze(url.parse(...args))
+    };
+  };
+}
+
+
+
 /*global module */
 if (require.main === module) {
   // Only access ambient authority (e.g. fs) when invoked as script.
@@ -42,7 +59,7 @@ if (require.main === module) {
     readFile: require('fs').readFile,
   });
 
-  ld.load('./main').then(main => {
+  ld.load('./main', { url: _url() }).then(main => {
     main({
       createServer: _createServer(ld, { http: require('http') }),
     });

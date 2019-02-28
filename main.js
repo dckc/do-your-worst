@@ -1,8 +1,9 @@
 // adapted from https://blog.risingstack.com/your-first-node-js-http-server/
 
-/* global require, console */
+/* global require, console, SES */
 
 const harden = require('@agoric/harden');
+const { parse } = require('url');
 
 
 function main({ createServer }) {
@@ -10,12 +11,7 @@ function main({ createServer }) {
 
   const port = 3000;
 
-  const requestHandler = (request, response) => {
-    console.log(request.url);
-    response.end('Hello Node.js Server!');
-  };
-
-  const server = createServer(requestHandler);
+  const server = createServer(doYourWorst);
 
   tamper(server);
 
@@ -28,6 +24,50 @@ function main({ createServer }) {
     return null;
   });
 }
+
+
+const page = `
+<!doctype html><html><head>
+<title>Do Your Worst!</title>
+</head>
+<body>
+<h1>Do Your Worst!</h1>
+<form action='GET'>
+
+<p>What js code would you like me to evaluate?</p>
+<textarea cols='50' rows='15' name='code'>
+
+</textarea>
+<br />
+<input type='submit' name='Evaluate' />
+</form>
+
+</body></html>
+`;
+
+function doYourWorst(request, response) {
+  console.log(request.url);
+
+  const { query } = parse(request.url, true);
+  console.log(query);
+
+  if (query && query.code) {
+    const code = query.code.trim();
+    console.log('evaluating:', code);
+    const messages = [];
+    const s = SES.makeSESRootRealm({});
+
+    try {
+      const val = s.evaluate(code, {});
+      response.end(`${val}`);
+    } catch (err) {
+      response.end(`failed: ${err}`);
+    }
+
+  } else {
+    response.end(page);
+  }
+};
 
 
 function tamper(server) {
