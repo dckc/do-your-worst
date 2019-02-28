@@ -1,0 +1,21 @@
+{
+  "name": "capsite",
+  "version": "0.1.0",
+  "description": "web site built with object capability discipline",
+  "main": "server.js",
+  "module": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "capabilities",
+    "security",
+    "ocaps"
+  ],
+  "author": "Dan Connolly",
+  "license": "MIT",
+  "dependencies": {
+    "esm": "^3.2.7",
+    "ses": "^0.4.0"
+  }
+}
